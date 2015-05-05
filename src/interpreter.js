@@ -52,8 +52,13 @@ var interpreter = (function () {
 		  LX_BLOCK: function(c) {
 		      var val;
 		      pushScope();
-		      for (var i in c)
-			  val = interpretExpr(c[i]);
+		      for (var i in c){
+		      	val = interpretExpr(c[i]);
+		      	if(c[i].name == 'LX_RETURN'){
+		      		break;
+		      	} 
+		      }
+			  
 		      popScope();
 		      return (val);
 		  },
@@ -72,7 +77,7 @@ var interpreter = (function () {
 			      console.warn("Runtime warning: too few arguments provided to function " + c[0].val);
 			  else if (c.length - 1 > args.length)
 			      console.warn("Runtime warning: too many arguments provided to function " + c[0].val);
-			  pushScope();
+			  pushScope(); 
 			  for (var i = 0; i < args.length; i++)
 			      _this[args[i].val] = i + 1 < c.length ? interpretExpr(c[i + 1]) : null;
 			  val = interpretExpr(f.children[1]);
@@ -119,6 +124,11 @@ var interpreter = (function () {
 			  val = interpretExpr(c[3]);
 		      popScope();
 		      return (val);
+		  },
+		  LX_RETURN: function (c) {
+		  	console.log('LX_RETURN==================');
+		  	console.log(c);
+		  	return 1;
 		  }
 		 }
 
@@ -151,27 +161,27 @@ var interpreter = (function () {
 	_this.cerr = function(x) {process.stderr.write(x);};
     }
 
-    function interpretExpr(ast) {
-	if (["LX_NUMBER", "LX_STRING"].indexOf(ast.name) != -1)
-	    return (ast.val);
-	if (ast.name == "LX_ID")
-	    return (getValue(ast.val));
-	if (ast.name == "LX_FUNC")
-	    return (ast);
-	if (_funcs[ast.name])
-	    return (_funcs[ast.name](ast.children));
-	return (null);
+    function interpretExpr(ast) { 
+		if (["LX_NUMBER", "LX_STRING"].indexOf(ast.name) != -1)
+		    return (ast.val);
+		if (ast.name == "LX_ID")
+		    return (getValue(ast.val));
+		if (ast.name == "LX_FUNC")
+		    return (ast);
+		if (_funcs[ast.name])
+		    return (_funcs[ast.name](ast.children));
+		return (null);
     }
 
     function setValue(name, val) {
-	for (var i = _scopeStack.length - 1; i >= 0; i--) {
-	    if (_scopeStack[i][name] != undefined) {
-		_scopeStack[i][name] = val;
+		for (var i = _scopeStack.length - 1; i >= 0; i--) {
+		    if (_scopeStack[i][name] != undefined) {
+			_scopeStack[i][name] = val;
+			return (val);
+		    }
+		}
+		_this[name] = val;
 		return (val);
-	    }
-	}
-	_this[name] = val;
-	return (val);
     }
 
     function getValue(name) {

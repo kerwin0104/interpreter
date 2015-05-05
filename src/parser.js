@@ -45,7 +45,7 @@ var parser = (function () {
 	    shift();
 	}
 	else
-	    node = ruleIf() || ruleWhile() || ruleDoWhile() || ruleFor() || ruleInstruction();
+	    node = ruleIf() || ruleWhile() || ruleDoWhile() || ruleFor() || ruleInstruction() || ruleReturn();
 	return (node);
     }
 
@@ -270,16 +270,16 @@ var parser = (function () {
 	    node = {name:_curr.name, children:[]};
 	    shift();
 	    if (!expect("LX_LPAREN") || !shift())
-		return (false);
-	    if (expect("LX_ID")) {
-		args.children.push({name:_curr.name, val:_curr.val});
-		shift();
-		while (accept("LX_COMMA") && shift()) {
-		    if (!expect("LX_ID"))
 			return (false);
-		    args.children.push({name:_curr.name, val:_curr.val});
-		    shift();
-		}
+	    if (accept("LX_ID")) {
+			args.children.push({name:_curr.name, val:_curr.val});
+			shift();
+			while (accept("LX_COMMA") && shift()) {
+			    if (!expect("LX_ID"))
+				return (false);
+			    args.children.push({name:_curr.name, val:_curr.val});
+			    shift();
+			}
 	    }
 	    node.children.push(args);
 	    if (!expect("LX_RPAREN") || !shift())
@@ -303,7 +303,7 @@ var parser = (function () {
 		node.children.push(tmp);
 		while (accept("LX_COMMA") && shift()) {
 		    if (!(tmp = ruleAssign()))
-			return (false);
+				return (false);
 		    node.children.push(tmp);
 		}
 	    }
@@ -312,6 +312,23 @@ var parser = (function () {
 	}
 	return (node);
     }
+
+    function ruleReturn(){ 
+    	var node = null;
+		var tmp;
+
+		if (accept("LX_RETURN") && shift()) {
+			console.log('ruleReturn0000-----')
+		    node = {name:"LX_RETURN", children:[]}; 
+		    if (accept("LX_NUMBER")){
+		    	node.children.push({name:_curr.name, val:_curr.val}); 
+		    	shift();
+		    	if (accept("LX_SEMICOLON"))
+					shift(); 
+		    }
+		}
+		return (node);
+    };
 
     function accept(lx) {
 	if (!_curr)
